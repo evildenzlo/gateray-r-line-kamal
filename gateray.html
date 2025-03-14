@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Сборщик конфигурации Gateray</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .config-builder {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        #result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="config-builder">
+        <h1>Сборщик конфигурации Gateray</h1>
+        
+        <div class="input-group">
+            <label>Серийный номер ONU:</label>
+            <input type="text" id="serial" placeholder="HWTCA64F9D51">
+        </div>
+
+        <div class="input-group">
+            <label>Номер порта (0-7):</label>
+            <select id="port">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Интерфейс в биллинге:</label>
+            <input type="text" id="billingInt" placeholder="0"> <!-- Здесь изменено -->
+        </div>
+
+        <button onclick="generateConfig()">Сгенерировать конфиг</button>
+        <div id="error" class="error"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function validateInput() {
+            const serial = document.getElementById('serial').value.trim();
+            const billingInt = document.getElementById('billingInt').value.trim();
+            
+            if(!serial) {
+                showError('Введите серийный номер ONU!');
+                return false;
+            }
+            
+            if(!billingInt) {
+                showError('Введите интерфейс в биллинге!');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = '⚠️ ' + message;
+            document.getElementById('result').textContent = '';
+        }
+
+        function generateConfig() {
+            if(!validateInput()) return;
+
+            const serial = document.getElementById('serial').value;
+            const port = document.getElementById('port').value;
+            const billingInt = document.getElementById('billingInt').value;
+
+            const config = `ont add ${port} ${billingInt} sn-auth "${serial}" ont-lineprofile-id 1 ont-srvprofile-id 0\n\n` +
+                           `ont port native-vlan ${port} ${billingInt} eth 1 vlan 10 priority 0`;
+
+            document.getElementById('result').textContent = config;
+            document.getElementById('error').textContent = '';
+        }
+
+        document.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') generateConfig();
+        });
+    </script>
+</body>
+</html>
